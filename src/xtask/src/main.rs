@@ -4,6 +4,11 @@ mod dependencies;
 mod packaging;
 mod version;
 
+use crate::build::Profile;
+use vfs::Layout;
+use vors_filesystem as vfs;
+use pico_args::Arguments;
+use std::{fs, time::Instant};
 
 use xshell::{cmd, Shell};
 
@@ -18,21 +23,18 @@ SUBCOMMANDS:
     prepare-deps        Download and compile server and client external dependencies
     build-server        Build server driver, then copy binaries to build folder
     build-client        Build client, then copy binaries to build folder
-    build-client-lib    Build a C-ABI VORS client library and header.
     run-server          Build server and then open the launcher
+    run-client          Build client and then open the launcher
     package-server      Build server in release mode, make portable version and installer
-    package-client-lib  Build client library then zip it
+    package-client      Build client library then zip it
     clean               Removes all build artifacts and dependencies.
     bump                Bump server and client package versions
     clippy              Show warnings for selected clippy lints
-    kill-oculus         Kill all Oculus processes
 
 FLAGS:
     --help              Print this text
     --keep-config       Preserve the configuration file between rebuilds (session.json)
-    --no-nvidia         Disables nVidia support on Linux. For prepare-deps subcommand
     --release           Optimized build with less debug checks. For build subcommands
-    --gpl               Bundle GPL libraries (FFmpeg). Only for Windows
     --experiments       Build unfinished features. For build subcommands
     --appimage          Package as AppImage. For package-server subcommand
     --zsync             For --appimage, create .zsync update file and build AppImage with embedded update information. For package-server subcommand
@@ -51,17 +53,17 @@ ARGS:
 pub fn run_server() {
     let sh = Shell::new().unwrap();
 
-    let launcher_exe = Layout::new(&afs::server_build_dir()).launcher_exe();
+    let launcher_exe = Layout::new(&vfs::server_build_dir()).launcher_exe();
 
     cmd!(sh, "{launcher_exe}").run().unwrap();
 }
 
 pub fn clean() {
-    fs::remove_dir_all(afs::build_dir()).ok();
-    fs::remove_dir_all(afs::deps_dir()).ok();
-    if afs::target_dir() == afs::workspace_dir().join("target") {
+    fs::remove_dir_all(vfs::build_dir()).ok();
+    fs::remove_dir_all(vfs::deps_dir()).ok();
+    if vfs::target_dir() == vfs::workspace_dir().join("target") {
         // Detete target folder only if in the local wokspace!
-        fs::remove_dir_all(afs::target_dir()).ok();
+        fs::remove_dir_all(vfs::target_dir()).ok();
     }
 }
 
@@ -124,14 +126,12 @@ fn main() {
     if args.contains(["-h", "--help"]) {
         println!("{HELP_STR}");
     } else if let Ok(Some(subcommand)) = args.subcommand() {
-        let no_nvidia = args.contains("--no-nvidia");
         let is_release = args.contains("--release");
         let profile = if is_release {
             Profile::Release
         } else {
             Profile::Debug
         };
-        let gpl = args.contains("--gpl");
         let experiments = args.contains("--experiments");
         let is_nightly = args.contains("--nightly");
         let no_rebuild = args.contains("--no-rebuild");
@@ -151,38 +151,40 @@ fn main() {
                     if let Some(platform) = platform {
                         match platform.as_str() {
                             "windows" => dependencies::prepare_windows_deps(for_ci),
-                            "linux" => dependencies::build_ffmpeg_linux(!no_nvidia),
-                            "android" => dependencies::build_android_deps(for_ci),
+                            "linux" => dependencies::prepare_linux_deps(for_ci),
                             _ => panic!("Unrecognized platform."),
                         }
                     } else {
                         if cfg!(windows) {
                             dependencies::prepare_windows_deps(for_ci);
                         } else if cfg!(target_os = "linux") {
-                            dependencies::build_ffmpeg_linux(!no_nvidia);
+                            dependencies::prepare_linux_deps(for_ci);
                         }
-
-                        dependencies::build_android_deps(for_ci);
                     }
                 }
                 "build-server" => {
-                    build::build_server(profile, gpl, None, false, experiments, keep_config)
+                    build::build_server(profile, None, false, experiments, keep_config)
                 }
-                "build-client" => build::build_android_client(profile),
-                "build-client-lib" => build::build_client_lib(profile),
+                "build-client" => {
+                    build::build_client(profile, None, false, experiments, keep_config)
+                }
                 "run-server" => {
                     if !no_rebuild {
-                        build::build_server(profile, gpl, None, false, experiments, keep_config);
+                        build::build_server(profile, None, false, experiments, keep_config);
                     }
                     run_server();
                 }
-                "package-server" => packaging::package_server(gpl, root, appimage, zsync),
-                "package-client" => build::build_android_client(Profile::Distribution),
-                "package-client-lib" => packaging::package_client_lib(),
+                "run-client" => {
+                    if !no_rebuild {
+                        build::build_client(profile, None, false, experiments, keep_config);
+                    }
+                    run_server();
+                }
+                "package-server" => packaging::package_server(root, appimage, zsync),
+                "package-client" => packaging::package_client(root, appimage, zsync),
                 "clean" => clean(),
                 "bump" => version::bump_version(version, is_nightly),
                 "clippy" => clippy(),
-                "kill-oculus" => kill_oculus_processes(),
                 _ => {
                     println!("\nUnrecognized subcommand.");
                     println!("{HELP_STR}");

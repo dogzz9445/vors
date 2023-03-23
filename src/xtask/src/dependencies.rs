@@ -1,0 +1,225 @@
+// use crate::command;
+// use vors_filesystem as vfs;
+// use std::fs;
+use xshell::{cmd, Shell};
+
+pub fn choco_install(sh: &Shell, packages: &[&str]) -> Result<(), xshell::Error> {
+    cmd!(
+        sh,
+        "powershell Start-Process choco -ArgumentList \"install {packages...} -y\" -Verb runAs -Wait"
+    )
+    .run()
+}
+
+pub fn prepare_windows_deps(skip_admin_priv: bool) {
+    let sh = Shell::new().unwrap();
+
+    if !skip_admin_priv {
+        choco_install(
+            &sh,
+            &[
+                "zip",
+                "unzip",
+                //"llvm",
+                //"vulkan-sdk",
+                "wixtoolset",
+                "pkgconfiglite",
+            ],
+        )
+        .unwrap();
+    }
+
+    // prepare_x264_windows();
+    // prepare_ffmpeg_windows();
+}
+
+pub fn prepare_linux_deps(skip_admin_priv: bool) {
+
+}
+
+// pub fn build_ffmpeg_linux(nvenc_flag: bool) {
+//     let sh = Shell::new().unwrap();
+
+//     let download_path = vfs::deps_dir().join("linux");
+//     command::download_and_extract_zip(
+//         &sh,
+//         "https://codeload.github.com/FFmpeg/FFmpeg/zip/n5.1",
+//         &download_path,
+//     )
+//     .unwrap();
+
+//     let final_path = download_path.join("ffmpeg");
+
+//     fs::rename(download_path.join("FFmpeg-n5.1"), &final_path).unwrap();
+
+//     let flags = [
+//         "--enable-gpl",
+//         "--enable-version3",
+//         "--enable-static",
+//         "--enable-shared",
+//         "--disable-programs",
+//         "--disable-doc",
+//         "--disable-avdevice",
+//         "--disable-avformat",
+//         "--disable-swresample",
+//         "--disable-postproc",
+//         "--disable-network",
+//         "--enable-lto",
+//         "--disable-everything",
+//         "--enable-encoder=h264_vaapi",
+//         "--enable-encoder=hevc_vaapi",
+//         "--enable-encoder=libx264",
+//         "--enable-encoder=libx264rgb",
+//         // "--enable-encoder=libx265",
+//         "--enable-hwaccel=h264_vaapi",
+//         "--enable-hwaccel=hevc_vaapi",
+//         "--enable-filter=scale",
+//         "--enable-filter=scale_vaapi",
+//         "--enable-libx264",
+//         // "--enable-libx265",
+//         "--enable-vulkan",
+//         "--enable-libdrm",
+//         "--enable-pic",
+//         "--enable-rpath",
+//     ];
+//     let install_prefix = format!("--prefix={}", final_path.join("vors_build").display());
+//     // The reason for 4x$ in LDSOFLAGS var refer to https://stackoverflow.com/a/71429999
+//     // all varients of --extra-ldsoflags='-Wl,-rpath,$ORIGIN' do not work! don't waste your time trying!
+//     //
+//     let config_vars = r#"-Wl,-rpath,'$$$$ORIGIN'"#;
+
+//     let _push_guard = sh.push_dir(final_path);
+//     let _env_vars = sh.push_env("LDSOFLAGS", config_vars);
+
+//     if nvenc_flag {
+//         /*
+//            Describing Nvidia specific options --nvccflags:
+//            nvcc from CUDA toolkit version 11.0 or higher does not support compiling for 'compute_30' (default in ffmpeg)
+//            52 is the minimum required for the current CUDA 11 version (Quadro M6000 , GeForce 900, GTX-970, GTX-980, GTX Titan X)
+//            https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/
+//            Anyway below 50 arch card don't support nvenc encoding hevc https://developer.nvidia.com/nvidia-video-codec-sdk (Supported devices)
+//            Nvidia docs:
+//            https://docs.nvidia.com/video-technologies/video-codec-sdk/ffmpeg-with-nvidia-gpu/#commonly-faced-issues-and-tips-to-resolve-them
+//         */
+//         #[cfg(target_os = "linux")]
+//         {
+//             let cuda = pkg_config::Config::new().probe("cuda").unwrap();
+//             let include_flags = cuda
+//                 .include_paths
+//                 .iter()
+//                 .map(|path| format!("-I{}", path.to_string_lossy()))
+//                 .reduce(|a, b| format!("{a} {b}"))
+//                 .expect("pkg-config cuda entry to have include-paths");
+//             let link_flags = cuda
+//                 .link_paths
+//                 .iter()
+//                 .map(|path| format!("-L{}", path.to_string_lossy()))
+//                 .reduce(|a, b| format!("{a} {b}"))
+//                 .expect("pkg-config cuda entry to have link-paths");
+
+//             let nvenc_flags = &[
+//                 "--enable-encoder=h264_nvenc",
+//                 "--enable-encoder=hevc_nvenc",
+//                 "--enable-nonfree",
+//                 "--enable-cuda-nvcc",
+//                 "--enable-libnpp",
+//                 "--enable-hwaccel=h264_nvenc",
+//                 "--enable-hwaccel=hevc_nvenc",
+//                 "--nvccflags=\"-gencode arch=compute_52,code=sm_52 -O2\"",
+//                 &format!("--extra-cflags=\"{include_flags}\""),
+//                 &format!("--extra-ldflags=\"{link_flags}\""),
+//             ];
+
+//             let flags_combined = flags.join(" ");
+//             let nvenc_flags_combined = nvenc_flags.join(" ");
+
+//             let command =
+//                 format!("./configure {install_prefix} {flags_combined} {nvenc_flags_combined}");
+
+//             cmd!(sh, "bash -c {command}").run().unwrap();
+//         }
+//     } else {
+//         cmd!(sh, "./configure {install_prefix} {flags...}")
+//             .run()
+//             .unwrap();
+//     }
+
+//     // Patches ffmpeg for workarounds and patches that have yet to be unstreamed
+//     let ffmpeg_command = "for p in ../../../patches/*; do patch -p1 < $p; done";
+//     cmd!(sh, "bash -c {ffmpeg_command}").run().unwrap();
+
+//     let nproc = cmd!(sh, "nproc").read().unwrap();
+//     cmd!(sh, "make -j{nproc}").run().unwrap();
+//     cmd!(sh, "make install").run().unwrap();
+// }
+
+// fn get_android_openxr_loaders() {
+//     let sh = Shell::new().unwrap();
+
+//     let destination_dir = vfs::deps_dir().join("android_openxr/arm64-v8a");
+//     fs::create_dir_all(&destination_dir).unwrap();
+
+//     let temp_dir = vfs::build_dir().join("temp_download");
+
+//     // Generic
+//     command::download_and_extract_zip(
+//         &sh,
+//         &format!(
+//             "https://github.com/KhronosGroup/OpenXR-SDK-Source/releases/download/{}",
+//             "release-1.0.26/openxr_loader_for_android-1.0.26.aar",
+//         ),
+//         &temp_dir,
+//     )
+//     .unwrap();
+//     fs::copy(
+//         temp_dir.join("prefab/modules/openxr_loader/libs/android.arm64-v8a/libopenxr_loader.so"),
+//         destination_dir.join("libopenxr_loader.so"),
+//     )
+//     .unwrap();
+//     fs::remove_dir_all(&temp_dir).ok();
+
+//     // Quest
+//     command::download_and_extract_zip(
+//         &sh,
+//         "https://securecdn.oculus.com/binaries/download/?id=5860257274012811",
+//         &temp_dir,
+//     )
+//     .unwrap();
+//     fs::copy(
+//         temp_dir.join("OpenXR/Libs/Android/arm64-v8a/Release/libopenxr_loader.so"),
+//         destination_dir.join("libopenxr_loader_quest.so"),
+//     )
+//     .unwrap();
+//     fs::remove_dir_all(&temp_dir).ok();
+
+//     // Pico
+//     command::download_and_extract_zip(
+//         &sh,
+//         "https://sdk.picovr.com/developer-platform/sdk/Pico_OpenXR_SDK_v210.zip",
+//         &temp_dir,
+//     )
+//     .unwrap();
+//     fs::copy(
+//         temp_dir.join("libs/android.arm64-v8a/libopenxr_loader.so"),
+//         destination_dir.join("libopenxr_loader_pico.so"),
+//     )
+//     .unwrap();
+//     fs::remove_dir_all(temp_dir).ok();
+// }
+
+// pub fn build_android_deps(skip_admin_priv: bool) {
+//     let sh = Shell::new().unwrap();
+
+//     if cfg!(windows) && !skip_admin_priv {
+//         choco_install(&sh, &["unzip", "llvm"]).unwrap();
+//     }
+
+//     cmd!(sh, "rustup target add aarch64-linux-android")
+//         .run()
+//         .unwrap();
+//     cmd!(sh, "cargo install cargo-apk cargo-ndk cbindgen")
+//         .run()
+//         .unwrap();
+
+//     get_android_openxr_loaders();
+// }

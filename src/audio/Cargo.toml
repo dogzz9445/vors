@@ -1,5 +1,5 @@
 [package]
-name = "vors_xtask"
+name = "vors_audio"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -7,7 +7,3 @@ authors.workspace = true
 license.workspace = true
 
 [dependencies]
-vors_filesystem.workspace = true
-
-pico-args = "0.5.0"
-xshell = "0.2.3"

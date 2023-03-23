@@ -1,8 +1,23 @@
-[package]
-name = "vors"
-version = "0.1.0"
+[workspace]
+resolver = "2"
+members = ["src/*"]
+
+[workspace.package]
+version = "0.1.1"
 edition = "2021"
+rust-version = "1.65"
+authors = ["vors-org"]
+license = "MIT"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[workspace.dependencies]
+vors_audio = { path = "src/audio" }
+vors_client = { path = "src/client" }
+vors_commands = { path = "src/commands" }
+vors_common = { path = "src/common" }
+vors_filesystem = { path = "src/filesystem" }
+vors_server = { path = "src/server" }
+vors_sockets = { path = "src/sockets" }
 
-[dependencies]
+[profile.distribution]
+inherits = "release"
+lto = true
