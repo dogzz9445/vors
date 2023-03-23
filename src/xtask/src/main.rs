@@ -25,6 +25,7 @@ SUBCOMMANDS:
     build-client        Build client, then copy binaries to build folder
     run-server          Build server and then open the launcher
     run-client          Build client and then open the launcher
+    run-both            Build server and client, then open the launcher
     package-server      Build server in release mode, make portable version and installer
     package-client      Build client library then zip it
     clean               Removes all build artifacts and dependencies.
@@ -53,7 +54,15 @@ ARGS:
 pub fn run_server() {
     let sh = Shell::new().unwrap();
 
-    let launcher_exe = Layout::new(&vfs::server_build_dir()).launcher_exe();
+    let launcher_exe = Layout::new(&vfs::server_build_dir()).server_launcher_exe();
+
+    cmd!(sh, "{launcher_exe}").run().unwrap();
+}
+
+pub fn run_client() {
+    let sh = Shell::new().unwrap();
+
+    let launcher_exe = Layout::new(&vfs::client_build_dir()).client_launcher_exe();
 
     cmd!(sh, "{launcher_exe}").run().unwrap();
 }
@@ -151,15 +160,16 @@ fn main() {
                     if let Some(platform) = platform {
                         match platform.as_str() {
                             "windows" => dependencies::prepare_windows_deps(for_ci),
-                            "linux" => dependencies::prepare_linux_deps(for_ci),
+                            // "linux" => dependencies::prepare_linux_deps(for_ci),
                             _ => panic!("Unrecognized platform."),
                         }
                     } else {
                         if cfg!(windows) {
                             dependencies::prepare_windows_deps(for_ci);
-                        } else if cfg!(target_os = "linux") {
-                            dependencies::prepare_linux_deps(for_ci);
-                        }
+                        } 
+                        // else if cfg!(target_os = "linux") {
+                        //     dependencies::prepare_linux_deps(for_ci);
+                        // }
                     }
                 }
                 "build-server" => {
@@ -178,7 +188,15 @@ fn main() {
                     if !no_rebuild {
                         build::build_client(profile, None, false, experiments, keep_config);
                     }
+                    run_client();
+                }
+                "run-both" => {
+                    if !no_rebuild {
+                        build::build_server(profile, None, false, experiments, keep_config);
+                        build::build_client(profile, None, false, experiments, keep_config);
+                    }
                     run_server();
+                    run_client();
                 }
                 "package-server" => packaging::package_server(root, appimage, zsync),
                 "package-client" => packaging::package_client(root, appimage, zsync),
