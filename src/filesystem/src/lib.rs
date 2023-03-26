@@ -137,11 +137,20 @@ impl Layout {
         }
     }
 
-    pub fn launcher_exe(&self) -> PathBuf {
+    pub fn server_launcher_exe(&self) -> PathBuf {
         let exe = if cfg!(windows) {
-            "VORS Launcher.exe"
+            "VORS Server Launcher.exe"
         } else {
-            "vors_launcher"
+            "vors_server_launcher"
+        };
+        self.executables_dir.join(exe)
+    }
+
+    pub fn client_launcher_exe(&self) -> PathBuf {
+        let exe = if cfg!(windows) {
+            "VORS Client Launcher.exe"
+        } else {
+            "vors_client_launcher"
         };
         self.executables_dir.join(exe)
     }

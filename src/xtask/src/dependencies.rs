@@ -33,11 +33,9 @@ pub fn prepare_windows_deps(skip_admin_priv: bool) {
     // prepare_ffmpeg_windows();
 }
 
-pub fn prepare_linux_deps(skip_admin_priv: bool) {
-    if skip_admin_priv {
-        // TODO:
-    }
-}
+// pub fn prepare_linux_deps(skip_admin_priv: bool) {
+
+// }
 
 // pub fn build_ffmpeg_linux(nvenc_flag: bool) {
 //     let sh = Shell::new().unwrap();

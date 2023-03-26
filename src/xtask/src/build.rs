@@ -78,21 +78,21 @@ pub fn build_server(
             .run()
             .unwrap();
 
-        sh.copy_file(
-            artifacts_dir.join(vfs::dynlib_fname("vors_server")),
-            build_layout.resources_lib(),
-        )
-        .unwrap();
+        // sh.copy_file(
+        //     artifacts_dir.join(vfs::dynlib_fname("vors_server")),
+        //     build_layout.resources_lib(),
+        // )
+        // .unwrap();
 
-        if cfg!(windows) {
-            sh.copy_file(
-                artifacts_dir.join("vors_server.pdb"),
-                build_layout
-                    .resources_lib_dir()
-                    .join("driver_vors_server.pdb"),
-            )
-            .unwrap();
-        }
+        // if cfg!(windows) {
+        //     sh.copy_file(
+        //         artifacts_dir.join("vors_server.pdb"),
+        //         build_layout
+        //             .resources_lib_dir()
+        //             .join("driver_vors_server.pdb"),
+        //     )
+        //     .unwrap();
+        // }
     }
 
     // build launcher
@@ -102,50 +102,50 @@ pub fn build_server(
 
         sh.copy_file(
             artifacts_dir.join(vfs::exec_fname("vors_launcher")),
-            build_layout.launcher_exe(),
+            build_layout.server_launcher_exe(),
         )
         .unwrap();
     }
 
-    // Build dashboard
-    {
-        let _push_guard = sh.push_dir(vfs::crate_dir("dashboard"));
-        cmd!(sh, "cargo build {common_flags_ref...}").run().unwrap();
+    // // Build dashboard
+    // {
+    //     let _push_guard = sh.push_dir(vfs::crate_dir("dashboard"));
+    //     cmd!(sh, "cargo build {common_flags_ref...}").run().unwrap();
 
-        sh.copy_file(
-            artifacts_dir.join(vfs::exec_fname("vors_dashboard")),
-            build_layout.dashboard_exe(),
-        )
-        .unwrap();
-    }
+    //     sh.copy_file(
+    //         artifacts_dir.join(vfs::exec_fname("vors_dashboard")),
+    //         build_layout.dashboard_exe(),
+    //     )
+    //     .unwrap();
+    // }
 
     // copy dependencies
-    if cfg!(windows) {
-        command::copy_recursive(
-            &sh,
-            &vfs::crate_dir("server").join("cpp/bin/windows"),
-            &build_layout.resources_lib_dir(),
-        )
-        .unwrap();
-    }
+    // if cfg!(windows) {
+    //     command::copy_recursive(
+    //         &sh,
+    //         &vfs::crate_dir("server").join("cpp/bin/windows"),
+    //         &build_layout.resources_lib_dir(),
+    //     )
+    //     .unwrap();
+    // }
 
     // copy static resources
     {
-        // copy dashboard
-        command::copy_recursive(
-            &sh,
-            &vfs::workspace_dir().join("dashboard"),
-            &build_layout.dashboard_dir(),
-        )
-        .unwrap();
+        // // copy dashboard
+        // command::copy_recursive(
+        //     &sh,
+        //     &vfs::workspace_dir().join("dashboard"),
+        //     &build_layout.dashboard_dir(),
+        // )
+        // .unwrap();
 
         // copy presets
-        command::copy_recursive(
-            &sh,
-            &vfs::crate_dir("xtask").join("resources/presets"),
-            &build_layout.presets_dir(),
-        )
-        .ok();
+        // command::copy_recursive(
+        //     &sh,
+        //     &vfs::crate_dir("xtask").join("resources/presets"),
+        //     &build_layout.presets_dir(),
+        // )
+        // .ok();
     }
 
     // build experiments
@@ -178,7 +178,7 @@ pub fn build_client(
 ) {
     let sh = Shell::new().unwrap();
 
-    let build_layout = Layout::new(&vfs::server_build_dir());
+    let build_layout = Layout::new(&vfs::client_build_dir());
 
     let mut common_flags = vec![];
     match profile {
@@ -202,8 +202,8 @@ pub fn build_client(
         None
     };
 
-    sh.remove_path(&vfs::server_build_dir()).unwrap();
-    sh.create_dir(&vfs::server_build_dir()).unwrap();
+    sh.remove_path(&vfs::client_build_dir()).unwrap();
+    sh.create_dir(&vfs::client_build_dir()).unwrap();
     sh.create_dir(&build_layout.resources_lib_dir())
         .unwrap();
     sh.create_dir(&build_layout.executables_dir).unwrap();
@@ -216,28 +216,28 @@ pub fn build_client(
         sh.set_var("VORS_ROOT_DIR", root);
     }
 
-    // build server
+    // build client
     {
-        let _push_guard = sh.push_dir(vfs::crate_dir("server"));
+        let _push_guard = sh.push_dir(vfs::crate_dir("client"));
         cmd!(sh, "cargo build {common_flags_ref...}")
             .run()
             .unwrap();
 
-        sh.copy_file(
-            artifacts_dir.join(vfs::dynlib_fname("vors_server")),
-            build_layout.resources_lib(),
-        )
-        .unwrap();
+        // sh.copy_file(
+        //     artifacts_dir.join(vfs::dynlib_fname("vors_client")),
+        //     build_layout.resources_lib(),
+        // )
+        // .unwrap();
 
-        if cfg!(windows) {
-            sh.copy_file(
-                artifacts_dir.join("vors_server.pdb"),
-                build_layout
-                    .resources_lib_dir()
-                    .join("driver_vors_server.pdb"),
-            )
-            .unwrap();
-        }
+        // if cfg!(windows) {
+        //     sh.copy_file(
+        //         artifacts_dir.join("vors_client.pdb"),
+        //         build_layout
+        //             .resources_lib_dir()
+        //             .join("driver_vors_client.pdb"),
+        //     )
+        //     .unwrap();
+        // }
     }
 
     // build launcher
@@ -247,51 +247,51 @@ pub fn build_client(
 
         sh.copy_file(
             artifacts_dir.join(vfs::exec_fname("vors_launcher")),
-            build_layout.launcher_exe(),
+            build_layout.client_launcher_exe(),
         )
         .unwrap();
     }
 
     // Build dashboard
-    {
-        let _push_guard = sh.push_dir(vfs::crate_dir("dashboard"));
-        cmd!(sh, "cargo build {common_flags_ref...}").run().unwrap();
+    // {
+    //     let _push_guard = sh.push_dir(vfs::crate_dir("dashboard"));
+    //     cmd!(sh, "cargo build {common_flags_ref...}").run().unwrap();
 
-        sh.copy_file(
-            artifacts_dir.join(vfs::exec_fname("vors_dashboard")),
-            build_layout.dashboard_exe(),
-        )
-        .unwrap();
-    }
+    //     sh.copy_file(
+    //         artifacts_dir.join(vfs::exec_fname("vors_dashboard")),
+    //         build_layout.dashboard_exe(),
+    //     )
+    //     .unwrap();
+    // }
 
-    // copy dependencies
-    if cfg!(windows) {
-        command::copy_recursive(
-            &sh,
-            &vfs::crate_dir("server").join("cpp/bin/windows"),
-            &build_layout.resources_lib_dir(),
-        )
-        .unwrap();
-    }
+    // // copy dependencies
+    // if cfg!(windows) {
+    //     command::copy_recursive(
+    //         &sh,
+    //         &vfs::crate_dir("client").join("cpp/bin/windows"),
+    //         &build_layout.resources_lib_dir(),
+    //     )
+    //     .unwrap();
+    // }
 
-    // copy static resources
-    {
-        // copy dashboard
-        command::copy_recursive(
-            &sh,
-            &vfs::workspace_dir().join("dashboard"),
-            &build_layout.dashboard_dir(),
-        )
-        .unwrap();
+    // // copy static resources
+    // {
+    //     // copy dashboard
+    //     command::copy_recursive(
+    //         &sh,
+    //         &vfs::workspace_dir().join("dashboard"),
+    //         &build_layout.dashboard_dir(),
+    //     )
+    //     .unwrap();
 
-        // copy presets
-        command::copy_recursive(
-            &sh,
-            &vfs::crate_dir("xtask").join("resources/presets"),
-            &build_layout.presets_dir(),
-        )
-        .ok();
-    }
+    //     // copy presets
+    //     command::copy_recursive(
+    //         &sh,
+    //         &vfs::crate_dir("xtask").join("resources/presets"),
+    //         &build_layout.presets_dir(),
+    //     )
+    //     .ok();
+    // }
 
     // build experiments
     if experiments {
