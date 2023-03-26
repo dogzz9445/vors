@@ -6,9 +6,9 @@ pub fn zip(sh: &Shell, source: &Path) -> Result<(), xshell::Error> {
     cmd!(sh, "zip -r9X {source} .").run()
 }
 
-pub fn unzip(sh: &Shell, source: &Path, destination: &Path) -> Result<(), xshell::Error> {
-    cmd!(sh, "unzip {source} -d {destination}").run()
-}
+// pub fn unzip(sh: &Shell, source: &Path, destination: &Path) -> Result<(), xshell::Error> {
+//     cmd!(sh, "unzip {source} -d {destination}").run()
+// }
 
 pub fn targz(sh: &Shell, source: &Path) -> Result<(), xshell::Error> {
     let parent_dir = source.parent().unwrap();
@@ -21,20 +21,20 @@ pub fn download(sh: &Shell, url: &str, destination: &Path) -> Result<(), xshell:
     cmd!(sh, "curl -L -o {destination} --url {url}").run()
 }
 
-pub fn download_and_extract_zip(
-    sh: &Shell,
-    url: &str,
-    destination: &Path,
-) -> Result<(), xshell::Error> {
-    let temp_dir_guard = sh.create_temp_dir()?;
+// pub fn download_and_extract_zip(
+//     sh: &Shell,
+//     url: &str,
+//     destination: &Path,
+// ) -> Result<(), xshell::Error> {
+//     let temp_dir_guard = sh.create_temp_dir()?;
 
-    let zip_file = temp_dir_guard.path().join("temp_download.zip");
-    download(sh, url, &zip_file)?;
+//     let zip_file = temp_dir_guard.path().join("temp_download.zip");
+//     download(sh, url, &zip_file)?;
 
-    sh.remove_path(destination).ok();
-    sh.create_dir(destination)?;
-    unzip(sh, &zip_file, destination)
-}
+//     sh.remove_path(destination).ok();
+//     sh.create_dir(destination)?;
+//     unzip(sh, &zip_file, destination)
+// }
 
 pub fn date_utc_yyyymmdd(sh: &Shell) -> Result<String, xshell::Error> {
     if cfg!(windows) {
