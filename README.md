@@ -31,6 +31,27 @@ Unity-example-3D
 This repository could be integrated to other repository (ex: vors-client, vors-server to vors[merged] )
 
 
+# Structures
+Now (Room > Channel) Future (Server > Group > Channel)
+
+1. 채널 내에 사용자들에 대해서 개별적으로 음량 조절을 API로
+2. 모든 채널에 브로드캐스트 및 리스닝 가능한 기능
+3. 가변적 채널 생성 기능 및 이동, API 제공
+4. 클라이언트의 음성을 스트림으로 뺄 수 있게
+
+# Development
+```
+cargo xtask prepare-deps
+cargo xtask run-both
+```
+
+# References
+- silent_rs
+https://github.com/Flone-dnb/silent-server-rs
+
+- ALVR
+https://github.com/alvr-org/ALVR
+
 # Commits
 
 - 2023-03-23: xtask Copy from ALVR

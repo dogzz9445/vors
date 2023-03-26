@@ -35,6 +35,7 @@ async fn rest_api(
 ) -> StrResult<Response<Body>> {
     let mut response = match request.uri().path() {
 
+        "/api/audio-devices" => reply_json(&server_data.read().get_audio_devices_list()?)?,
         other_uri => {
             if other_uri.contains("..") {
                 // Attempted tree traversal
