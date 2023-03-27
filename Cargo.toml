@@ -15,7 +15,6 @@ vors_client = { path = "src/client" }
 vors_commands = { path = "src/commands" }
 vors_common = { path = "src/common" }
 vors_filesystem = { path = "src/filesystem" }
-vors_launcher = { path = "src/launcher" }
 vors_server = { path = "src/server" }
 vors_sockets = { path = "src/sockets" }
 
