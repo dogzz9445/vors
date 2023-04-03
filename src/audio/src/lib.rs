@@ -1,4 +1,4 @@
-use vors_common::*;
+use vors_common::{once_cell::sync::Lazy, parking_lot::Mutex, prelude::*};
 use cpal::{
     traits::{DeviceTrait, HostTrait, StreamTrait},
     BufferSize, Device, Sample, SampleFormat, StreamConfig,
@@ -12,6 +12,21 @@ use std::{
 
 mod settings;
 pub use settings::*;
+
+static VIRTUAL_MICROPHONE_PAIRS: Lazy<Vec<(String, String)>> = Lazy::new(|| {
+    vec![
+        ("CABLE Input".into(), "CABLE Output".into()),
+        ("VoiceMeeter Input".into(), "VoiceMeeter Output".into()),
+        (
+            "VoiceMeeter Aux Input".into(),
+            "VoiceMeeter Aux Output".into(),
+        ),
+        (
+            "VoiceMeeter VAIO3 Input".into(),
+            "VoiceMeeter VAIO3 Output".into(),
+        ),
+    ]
+});
 
 pub enum AudioDeviceType {
     Output,
@@ -280,6 +295,7 @@ pub async fn record_audio_loop(
                                 .ok();
                         }
                     },
+                    None
                 )
                 .map_err(err!())?;
 
