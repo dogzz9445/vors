@@ -203,11 +203,14 @@ fn main() {
                 "clean" => clean(),
                 "bump" => version::bump_version(version, is_nightly),
                 "clippy" => clippy(),
+                "testprint" => {
+                    println!("test");
+                },
                 _ => {
                     println!("\nUnrecognized subcommand.");
                     println!("{HELP_STR}");
                     return;
-                }
+                },
             }
         } else {
             println!("\nWrong arguments.");
