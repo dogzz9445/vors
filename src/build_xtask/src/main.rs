@@ -1,0 +1,232 @@
+mod build;
+mod command;
+mod dependencies;
+mod packaging;
+mod version;
+
+use crate::build::Profile;
+use vfs::Layout;
+use vors_filesystem as vfs;
+use pico_args::Arguments;
+use std::{fs, time::Instant};
+
+use xshell::{cmd, Shell};
+
+const HELP_STR: &str = r#"
+cargo xtask
+Developement actions for VORS.
+
+USAGE:
+    cargo xtask <SUBCOMMAND> [FLAG] [ARGS]
+
+SUBCOMMANDS:
+    prepare-deps        Download and compile server and client external dependencies
+    build-server        Build server driver, then copy binaries to build folder
+    build-client        Build client, then copy binaries to build folder
+    run-server          Build server and then open the launcher
+    run-client          Build client and then open the launcher
+    run-both            Build server and client, then open the launcher
+    package-server      Build server in release mode, make portable version and installer
+    package-client      Build client library then zip it
+    clean               Removes all build artifacts and dependencies.
+    bump                Bump server and client package versions
+    clippy              Show warnings for selected clippy lints
+
+FLAGS:
+    --help              Print this text
+    --keep-config       Preserve the configuration file between rebuilds (session.json)
+    --release           Optimized build with less debug checks. For build subcommands
+    --experiments       Build unfinished features. For build subcommands
+    --appimage          Package as AppImage. For package-server subcommand
+    --zsync             For --appimage, create .zsync update file and build AppImage with embedded update information. For package-server subcommand
+    --nightly           Append nightly tag to versions. For bump subcommand
+    --no-rebuild        Do not rebuild the server with run-server
+    --ci                Do some CI related tweaks. Depends on the other flags and subcommand
+
+ARGS:
+    --platform <NAME>   Name of the platform (operative system or hardware name). snake_case
+    --version <VERSION> Specify version to set with the bump-versions subcommand
+    --root <PATH>       Installation root. By default no root is set and paths are calculated using
+                        relative paths, which requires conforming to FHS on Linux.
+"#;
+
+
+pub fn run_server() {
+    let sh = Shell::new().unwrap();
+
+    let launcher_exe = Layout::new(&vfs::server_build_dir()).server_launcher_exe();
+
+    cmd!(sh, "{launcher_exe}").run().unwrap();
+}
+
+pub fn run_client() {
+    let sh = Shell::new().unwrap();
+
+    let launcher_exe = Layout::new(&vfs::client_build_dir()).client_launcher_exe();
+
+    cmd!(sh, "{launcher_exe}").run().unwrap();
+}
+
+pub fn clean() {
+    fs::remove_dir_all(vfs::build_dir()).ok();
+    fs::remove_dir_all(vfs::deps_dir()).ok();
+    if vfs::target_dir() == vfs::workspace_dir().join("target") {
+        // Detete target folder only if in the local wokspace!
+        fs::remove_dir_all(vfs::target_dir()).ok();
+    }
+}
+
+fn clippy() {
+    // lints updated for Rust 1.59
+    let restriction_lints = [
+        "allow_attributes_without_reason",
+        "clone_on_ref_ptr",
+        "create_dir",
+        "decimal_literal_representation",
+        "else_if_without_else",
+        "expect_used",
+        "float_cmp_const",
+        "fn_to_numeric_cast_any",
+        "get_unwrap",
+        "if_then_some_else_none",
+        "let_underscore_must_use",
+        "lossy_float_literal",
+        "mem_forget",
+        "multiple_inherent_impl",
+        "rest_pat_in_fully_bound_structs",
+        // "self_named_module_files",
+        "str_to_string",
+        // "string_slice",
+        "string_to_string",
+        "try_err",
+        "unnecessary_self_imports",
+        "unneeded_field_pattern",
+        "unseparated_literal_suffix",
+        "verbose_file_reads",
+        "wildcard_enum_match_arm",
+    ];
+    let pedantic_lints = [
+        "borrow_as_ptr",
+        "enum_glob_use",
+        "explicit_deref_methods",
+        "explicit_into_iter_loop",
+        "explicit_iter_loop",
+        "filter_map_next",
+        "flat_map_option",
+        "float_cmp",
+        // todo: add more lints
+    ];
+
+    let flags = restriction_lints
+        .into_iter()
+        .chain(pedantic_lints)
+        .flat_map(|name| ["-W".to_owned(), format!("clippy::{name}")]);
+
+    let sh = Shell::new().unwrap();
+    cmd!(sh, "cargo clippy -- {flags...}").run().unwrap();
+}
+
+
+fn main() {
+    let begin_time = Instant::now();
+
+    let mut args = Arguments::from_env();
+
+    if args.contains(["-h", "--help"]) {
+        println!("{HELP_STR}");
+    } else if let Ok(Some(subcommand)) = args.subcommand() {
+        let is_release = args.contains("--release");
+        let profile = if is_release {
+            Profile::Release
+        } else {
+            Profile::Debug
+        };
+        let experiments = args.contains("--experiments");
+        let is_nightly = args.contains("--nightly");
+        let no_rebuild = args.contains("--no-rebuild");
+        let for_ci = args.contains("--ci");
+        let keep_config = args.contains("--keep-config");
+
+        let appimage = args.contains("--appimage");
+        let zsync = args.contains("--zsync");
+
+        let platform: Option<String> = args.opt_value_from_str("--platform").unwrap();
+        let version: Option<String> = args.opt_value_from_str("--version").unwrap();
+        let root: Option<String> = args.opt_value_from_str("--root").unwrap();
+
+        if args.finish().is_empty() {
+            match subcommand.as_str() {
+                "prepare-deps" => {
+                    if let Some(platform) = platform {
+                        match platform.as_str() {
+                            "windows" => dependencies::prepare_windows_deps(for_ci),
+                            // "linux" => dependencies::prepare_linux_deps(for_ci),
+                            _ => panic!("Unrecognized platform."),
+                        }
+                    } else {
+                        if cfg!(windows) {
+                            dependencies::prepare_windows_deps(for_ci);
+                        } 
+                        // else if cfg!(target_os = "linux") {
+                        //     dependencies::prepare_linux_deps(for_ci);
+                        // }
+                    }
+                }
+                "build-server" => {
+                    build::build_server(profile, None, false, experiments, keep_config)
+                }
+                "build-client" => {
+                    build::build_client(profile, None, false, experiments, keep_config)
+                }
+                "run-server" => {
+                    if !no_rebuild {
+                        build::build_server(profile, None, false, experiments, keep_config);
+                    }
+                    run_server();
+                }
+                "run-client" => {
+                    if !no_rebuild {
+                        build::build_client(profile, None, false, experiments, keep_config);
+                    }
+                    run_client();
+                }
+                "run-both" => {
+                    if !no_rebuild {
+                        build::build_server(profile, None, false, experiments, keep_config);
+                        build::build_client(profile, None, false, experiments, keep_config);
+                    }
+                    run_server();
+                    run_client();
+                }
+                "package-server" => packaging::package_server(root, appimage, zsync),
+                "package-client" => packaging::package_client(root, appimage, zsync),
+                "clean" => clean(),
+                "bump" => version::bump_version(version, is_nightly),
+                "clippy" => clippy(),
+                "testprint" => {
+                    println!("test");
+                },
+                _ => {
+                    println!("\nUnrecognized subcommand.");
+                    println!("{HELP_STR}");
+                    return;
+                },
+            }
+        } else {
+            println!("\nWrong arguments.");
+            println!("{HELP_STR}");
+            return;
+        }
+    } else {
+        println!("\nMissing subcommand.");
+        println!("{HELP_STR}");
+        return;
+    }
+
+    let elapsed_time = Instant::now() - begin_time;
+    println!(
+        "\nDone [{}m {}s]\n",
+        elapsed_time.as_secs() / 60,
+        elapsed_time.as_secs() % 60
+    );
+}

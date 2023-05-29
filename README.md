@@ -30,6 +30,20 @@ Unity-example-3D
 # Notice
 This repository could be integrated to other repository (ex: vors-client, vors-server to vors[merged] )
 
+# TODO:
+- Make client web server gui
+- client web firewall 
+- listup client api
+- audio changer
+- Make all of server
+
+
+# How to build
+
+Linux
+```
+libasound2-dev libjack-dev
+```
 
 # Structures
 Now (Room > Channel) Future (Server > Group > Channel)

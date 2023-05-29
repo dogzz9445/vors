@@ -10,13 +10,17 @@ authors = ["vors-org"]
 license = "MIT"
 
 [workspace.dependencies]
-vors_audio = { path = "src/audio" }
+vors_common = { path = "src/share_common" }
+vors_session = { path = "src/share_session" }
+vors_sockets = { path = "src/share_sockets" }
+vors_packets = { path = "src/share_packets" }
+
+vors_audio = { path = "src/client_audio" }
 vors_client = { path = "src/client" }
-vors_commands = { path = "src/commands" }
-vors_common = { path = "src/common" }
-vors_filesystem = { path = "src/filesystem" }
-vors_server = { path = "src/server" }
-vors_sockets = { path = "src/sockets" }
+
+vors_filesystem = { path = "src/build_filesystem" }
+vors_launcher = { path = "src/build_launcher" }
+vors_server = { path = "src/build_server" }
 
 [profile.distribution]
 inherits = "release"
