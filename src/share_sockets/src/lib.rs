@@ -17,7 +17,7 @@ pub const KEEPALIVE_INTERVAL: Duration = Duration::from_secs(1);
 type Ldc = tokio_util::codec::LengthDelimitedCodec;
 
 mod util {
-    use vors_common::prelude::*;
+    use vors_share_common::prelude::*;
     use std::future::Future;
     use tokio::{sync::oneshot, task};
 

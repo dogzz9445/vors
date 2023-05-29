@@ -1,15 +1,13 @@
 [package]
-name = "vors_session"
+name = "vors_share_session"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 authors.workspace = true
 license.workspace = true
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
-vors_common.workspace = true
+vors_share_common.workspace = true
 
 bytemuck = { version = "1", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }

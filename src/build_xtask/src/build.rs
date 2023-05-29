@@ -1,5 +1,5 @@
 use crate::command;
-use vors_filesystem::{self as vfs, Layout};
+use vors_build_filesystem::{self as vfs, Layout};
 use std::{
     fmt::{self, Display, Formatter},
     fs,

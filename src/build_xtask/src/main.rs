@@ -6,7 +6,7 @@ mod version;
 
 use crate::build::Profile;
 use vfs::Layout;
-use vors_filesystem as vfs;
+use vors_build_filesystem as vfs;
 use pico_args::Arguments;
 use std::{fs, time::Instant};
 

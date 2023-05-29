@@ -1,5 +1,5 @@
 [package]
-name = "vors_audio"
+name = "vors_client_audio"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -7,9 +7,9 @@ authors.workspace = true
 license.workspace = true
 
 [dependencies]
-vors_common.workspace = true
-vors_session.workspace = true
-vors_sockets.workspace = true
+vors_share_common.workspace = true
+vors_share_session.workspace = true
+vors_share_sockets.workspace = true
 
 cpal = { version = "0.15", features = ["jack"] }
 rodio = "0.17"

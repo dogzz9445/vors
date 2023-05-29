@@ -1,5 +1,5 @@
 [package]
-name = "client_edge"
+name = "vors_client_edge"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -9,14 +9,14 @@ license.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-vors_audio.workspace = true
-vors_common.workspace = true
-vors_filesystem.workspace = true
-vors_session.workspace = true
-vors_sockets.workspace = true
-# alvr_events.workspace = true
-# alvr_packets.workspace = true
-# alvr_server_io.workspace = true
+vors_share_common.workspace = true
+vors_share_session.workspace = true
+vors_share_sockets.workspace = true
+vors_share_packets.workspace = true
+
+vors_build_filesystem.workspace = true
+
+vors_client_audio.workspace = true
 
 # Serialization
 bincode = "1"

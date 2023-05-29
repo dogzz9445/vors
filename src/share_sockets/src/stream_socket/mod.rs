@@ -7,8 +7,8 @@
 mod tcp;
 mod udp;
 
-use vors_common::prelude::*;
-use vors_session::{SocketBufferSize, SocketProtocol};
+use vors_share_common::prelude::*;
+use vors_share_session::{SocketBufferSize, SocketProtocol};
 use bytes::{Buf, BufMut, BytesMut};
 use futures::SinkExt;
 use serde::{de::DeserializeOwned, Serialize};

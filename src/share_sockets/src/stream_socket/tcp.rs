@@ -1,6 +1,6 @@
 use crate::{Ldc, LOCAL_IP};
-use vors_common::prelude::*;
-use vors_session::SocketBufferSize;
+use vors_share_common::prelude::*;
+use vors_share_session::SocketBufferSize;
 use bytes::{Buf, Bytes, BytesMut};
 use futures::{
     stream::{SplitSink, SplitStream},

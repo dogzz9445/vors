@@ -1,5 +1,5 @@
 [package]
-name = "vors_filesystem"
+name = "vors_build_filesystem"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true

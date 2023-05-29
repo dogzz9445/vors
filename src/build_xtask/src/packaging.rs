@@ -2,7 +2,7 @@ use crate::{
     build::{self, Profile},
     command, version,
 };
-use vors_filesystem as vfs;
+use vors_build_filesystem as vfs;
 use std::path::PathBuf;
 use xshell::{cmd, Shell};
 

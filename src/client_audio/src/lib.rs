@@ -1,8 +1,8 @@
-use vors_common::{once_cell::sync::Lazy, parking_lot::Mutex, prelude::*};
-use vors_session::{
+use vors_share_common::{once_cell::sync::Lazy, parking_lot::Mutex, prelude::*};
+use vors_share_session::{
     AudioBufferingConfig, CustomAudioDeviceConfig, LinuxAudioBackend, MicrophoneDevicesConfig,
 };
-use vors_sockets::{ReceiverBuffer, StreamReceiver, StreamSender};
+use vors_share_sockets::{ReceiverBuffer, StreamReceiver, StreamSender};
 use cpal::{
     traits::{DeviceTrait, HostTrait, StreamTrait},
     BufferSize, Device, Host, Sample, SampleFormat, StreamConfig,

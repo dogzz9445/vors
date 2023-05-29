@@ -1,4 +1,4 @@
-use vors_common::{LogSeverity, LogSeverityDefault, LogSeverityDefaultVariant};
+use vors_share_common::{LogSeverity, LogSeverityDefault, LogSeverityDefaultVariant};
 use bytemuck::{Pod, Zeroable};
 use serde::{Deserialize, Serialize};
 use settings_schema::{
@@ -933,6 +933,6 @@ pub fn session_settings_default() -> SettingsDefault {
         patches: PatchesDefault {
             linux_async_reprojection: false,
         },
-        open_setup_wizard: vors_common::is_stable() || vors_common::is_nightly(),
+        open_setup_wizard: vors_share_common::is_stable() || vors_share_common::is_nightly(),
     }
 }

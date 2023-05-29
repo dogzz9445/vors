@@ -1,5 +1,5 @@
 use crate::command;
-use vors_filesystem as vfs;
+use vors_build_filesystem as vfs;
 use std::fs;
 use xshell::Shell;
 

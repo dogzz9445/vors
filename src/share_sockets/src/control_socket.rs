@@ -1,5 +1,5 @@
 use super::{Ldc, CONTROL_PORT, LOCAL_IP};
-use vors_common::prelude::*;
+use vors_share_common::prelude::*;
 use bytes::Bytes;
 use futures::{
     stream::{SplitSink, SplitStream},

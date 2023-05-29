@@ -3,7 +3,7 @@ mod settings;
 pub use settings::*;
 pub use settings_schema;
 
-use vors_common::{prelude::*, semver::Version, VORS_VERSION};
+use vors_share_common::{prelude::*, semver::Version, VORS_VERSION};
 use serde::{Deserialize, Serialize};
 use serde_json as json;
 use settings_schema::{NumberType, SchemaNode};

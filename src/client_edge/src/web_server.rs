@@ -2,9 +2,9 @@ use crate::{
     DECODER_CONFIG, FILESYSTEM_LAYOUT, SERVER_DATA_MANAGER, VIDEO_MIRROR_SENDER,
     VIDEO_RECORDING_FILE,
 };
-use vors_common::{log, prelude::*};
-use vors_events::{Event, EventType};
-use vors_packets::ServerRequest;
+use vors_share_common::{log, prelude::*};
+use vors_share_events::{Event, EventType};
+use vors_share_packets::ServerRequest;
 use bytes::Buf;
 use futures::SinkExt;
 use headers::HeaderMapExt;
@@ -106,7 +106,7 @@ async fn http_api(
                         log::log!(level, "{}", event.content);
                     }
                     ServerRequest::GetSession => {
-                        alvr_events::send_event(EventType::Session(Box::new(
+                        vors_events::send_event(EventType::Session(Box::new(
                             SERVER_DATA_MANAGER.read().session().clone(),
                         )));
                     }
@@ -121,7 +121,7 @@ async fn http_api(
                         .update_client_list(hostname, action),
                     ServerRequest::GetAudioDevices => {
                         if let Ok(list) = SERVER_DATA_MANAGER.read().get_audio_devices_list() {
-                            alvr_events::send_event(EventType::AudioDevices(list));
+                            vors_events::send_event(EventType::AudioDevices(list));
                         }
                     }
                     ServerRequest::CaptureFrame => unsafe { crate::CaptureFrame() },
@@ -143,19 +143,19 @@ async fn http_api(
                         .ok();
 
                         if let Ok(list) = alvr_server_io::get_registered_drivers() {
-                            alvr_events::send_event(EventType::DriversList(list));
+                            vors_events::send_event(EventType::DriversList(list));
                         }
                     }
                     ServerRequest::UnregisterDriver(path) => {
                         alvr_server_io::driver_registration(&[path], false).ok();
 
                         if let Ok(list) = alvr_server_io::get_registered_drivers() {
-                            alvr_events::send_event(EventType::DriversList(list));
+                            vors_events::send_event(EventType::DriversList(list));
                         }
                     }
                     ServerRequest::GetDriverList => {
                         if let Ok(list) = alvr_server_io::get_registered_drivers() {
-                            alvr_events::send_event(EventType::DriversList(list));
+                            vors_events::send_event(EventType::DriversList(list));
                         }
                     }
                     ServerRequest::RestartSteamvr => crate::notify_restart_driver(),
@@ -258,7 +258,7 @@ pub async fn web_server(events_sender: broadcast::Sender<Event>) -> StrResult {
                 async move {
                     let res = http_api(request, events_sender).await;
                     if let Err(e) = &res {
-                        alvr_common::show_e(e);
+                        vors_share_common::show_e(e);
                     }
 
                     res

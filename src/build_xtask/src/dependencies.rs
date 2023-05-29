@@ -20,17 +20,12 @@ pub fn prepare_windows_deps(skip_admin_priv: bool) {
             &[
                 "zip",
                 "unzip",
-                //"llvm",
-                //"vulkan-sdk",
                 "wixtoolset",
                 "pkgconfiglite",
             ],
         )
         .unwrap();
     }
-
-    // prepare_x264_windows();
-    // prepare_ffmpeg_windows();
 }
 
 // pub fn prepare_linux_deps(skip_admin_priv: bool) {
